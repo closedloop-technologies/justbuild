@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from lfg.helpers import is_git_installed
+from lfg.codediff.git_wrappers import is_git_installed
 
 
 @dataclass

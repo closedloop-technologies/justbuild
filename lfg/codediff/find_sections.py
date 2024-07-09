@@ -3,8 +3,8 @@ import subprocess
 from pathlib import Path
 from typing import Dict, List, Union
 
-from lfg.code_diffs import CodeDiff
-from lfg.helpers import get_diff, get_staged_changes
+from lfg.codediff.code_diffs import CodeDiff
+from lfg.codediff.git_wrappers import get_diff, get_staged_changes
 
 
 def run_git_diff(old_file: Union[str, Path], new_file: Union[str, Path]) -> str:

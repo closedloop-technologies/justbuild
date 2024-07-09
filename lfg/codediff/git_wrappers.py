@@ -29,11 +29,6 @@ def get_changed_files() -> List[str]:
     return result.stdout.strip().split("\n")
 
 
-def get_file_content(file_path: str) -> str:
-    with open(file_path, "r") as f:
-        return f.read()
-
-
 def get_staged_changes(file_path: str) -> str:
     result = subprocess.run(
         ["git", "diff", "--cached", file_path],
