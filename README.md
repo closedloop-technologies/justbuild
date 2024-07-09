@@ -2,6 +2,9 @@
 
 We all use ChatGPT, Claude, Copilot, or others to us all more productive programmers. However, the workflow has a lot of jank™ doesn't it? This little program tries to smooth the experience for all of us.
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/skruzel)
+
+
 ## Problem 1: Code Sections Missing in the chat
 
 I hate it when we are writing code with ChatGPT or the Claude Artifacts and suddenly we get the annoying
