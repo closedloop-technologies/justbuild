@@ -3,7 +3,7 @@ from typing import List
 
 import tqdm
 
-from lfg.codediff.code_diffs import CodeDiffs
+from lfg.codediff.git_diff_calculations import CodeDiffs
 from lfg.config import Config
 
 

@@ -1,5 +1,6 @@
 import subprocess
-from typing import List
+from pathlib import Path
+from typing import List, Union
 
 
 def is_git_installed() -> bool:
@@ -53,3 +54,10 @@ def get_diff(old_file: str, new_file: str):
     except subprocess.CalledProcessError as e:
         # Because git diff returns a non-zero exit code when there are differences
         return "\n".join(e.output.split("\n")[2:])
+
+
+def run_git_diff(old_file: Union[str, Path], new_file: Union[str, Path]) -> str:
+    if old_file is None:
+        return get_staged_changes(str(new_file))
+    else:
+        return get_diff(str(old_file), str(new_file))

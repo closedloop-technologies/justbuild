@@ -4,7 +4,7 @@ from pathlib import Path
 import pyperclip
 import typer
 
-from lfg.codediff.merging import merge_all, merge_files
+from lfg.codediff.merging import merge_all, merge as merge_files
 from lfg.config import load_config
 
 config = load_config()
@@ -63,7 +63,9 @@ def merge(
     updates = merge_files(
         old_file=old_file, new_file=updated_file, target_file=target_file
     )
-    typer.echo(f"Code pasted and merged into {target_file} with updates:\n{updates}")
+    typer.echo(
+        f"LFG 🚀! {len(updates.get('change_log',[]))} Code Omissions Corrected: {target_file}"
+    )
 
 
 # Entry point for the CLI is the `app` object loaded from __main__.py

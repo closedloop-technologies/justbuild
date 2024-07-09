@@ -5,10 +5,10 @@ from typing import Optional, Tuple
 
 import typer
 
-from lfg.codediff.code_diffs import code_diff_around_segment, parse_git_diff
-from lfg.codediff.find_sections import build_features, run_git_diff
-from lfg.codediff.git_wrappers import get_changed_files, is_git_repo
-from lfg.codediff.human_in_the_loop import human_in_the_loop_labeling
+from lfg.codediff.git_diff_calculations import code_diff_around_segment, parse_git_diff
+from lfg.codediff.features import build_features
+from lfg.codediff.git_wrappers import get_changed_files, is_git_repo, run_git_diff
+from lfg.codediff.human_in_the_loop import labeling
 from lfg.codediff.models import GreedyModel, LLMModel
 from lfg.config import Config
 
@@ -54,8 +54,8 @@ def merge(
     inputs = [
         {
             "_id": None,  # Counter to be added later
-            "_diff": i,
-            "_segment": j,
+            "_diff_index": i,
+            "_segment_index": j,
             "_prev_segment": "\n".join(diffs.changes[i].segments[j - 1].content),
             "_curr_segment": "\n".join(diffs.changes[i].segments[j].content),
             "_diff": code_diff_around_segment(diffs, i, j),
@@ -67,6 +67,8 @@ def merge(
     ]
     for counter, i in enumerate(inputs):
         i["_id"] = counter
+
+    # print(code_diff_around_segment(diffs, 2, 4))
 
     ## Less Granular - Only likely omitted code sections
     ## Least Granular - Only look at known code placeholders
@@ -122,7 +124,7 @@ def merge(
     # Narrow: Loop only where disagreement between greedy and llm
     narrow_samples = [{"_id": i, "_diff": inputs[i]["_diff"]} for i in disagreements]
 
-    human_labels = human_in_the_loop_labeling(
+    human_labels = labeling(
         narrow_samples, label="is_code_omission", default_confidence=0.99
     )
     for pred in human_labels:
@@ -160,12 +162,8 @@ def merge(
                     "replaced_code": inputs[i]["_prev_segment"],
                 }
             )
-    # all_replacements = feature_replacements + llm_replacements
-    # unique_replacements = [
-    #     dict(t) for t in {tuple(sorted(d.items())) for d in all_replacements}
-    # ]
+
     target_file.write_text(merged_code)
-    typer.echo(f"LFG 🚀! {len(change_log)} Code Omissions Corrected: {target_file}")
     return {
         "old_file": old_file,
         "new_file": new_file,

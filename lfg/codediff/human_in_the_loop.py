@@ -7,7 +7,20 @@ from rich.syntax import Syntax
 from rich.text import Text
 
 
-def human_in_the_loop_labeling(
+def _show_title(console):
+    console.print(
+        Panel(
+            "[bold]Definition: Placeholder Comment[/bold]\n\n"
+            "A placeholder comment is a descriptive note within the code that indicates "
+            "a section of the code is intentionally omitted or remains unchanged, often "
+            "represented by ellipsis or specific text.",
+            title="Please Label these potential 'Placeholder Comments'",
+            expand=False,
+        )
+    )
+
+
+def labeling(
     samples: List[Dict],
     label="label",
     default_confidence=0.99,
@@ -18,18 +31,6 @@ def human_in_the_loop_labeling(
     """
     console = console or Console()
     labeled_inputs = []
-
-    def _show_title(console):
-        console.print(
-            Panel(
-                "[bold]Placeholder Comment Definition[/bold]\n\n"
-                "A placeholder comment is a descriptive note within the code that indicates "
-                "a section of the code is intentionally omitted or remains unchanged, often "
-                "represented by ellipsis or specific text.",
-                title="Information",
-                expand=False,
-            )
-        )
 
     for index, input_dict in enumerate(samples, start=1):
         _show_title(console)

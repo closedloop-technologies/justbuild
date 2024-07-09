@@ -1,12 +1,6 @@
-import os
 import re
-import subprocess
 from dataclasses import dataclass
-from typing import Dict, List, Optional
-
-import openai
-import pyperclip
-import typer
+from typing import Dict, List
 
 
 @dataclass
@@ -89,22 +83,19 @@ def parse_git_diff(diff_output: str) -> CodeDiffs:
                 current_segment = None
             if not current_segment:
                 current_segment = DiffSegment(type="deletion", content=[])
-            current_segment.content.append(line[1:])
         elif line.startswith("+"):
             if current_segment and current_segment.type != "addition":
                 current_diff.segments.append(current_segment)
                 current_segment = None
             if not current_segment:
                 current_segment = DiffSegment(type="addition", content=[])
-            current_segment.content.append(line[1:])
         else:
             if current_segment and current_segment.type != "unchanged":
                 current_diff.segments.append(current_segment)
                 current_segment = None
             if not current_segment:
                 current_segment = DiffSegment(type="unchanged", content=[])
-            current_segment.content.append(line[1:])
-
+        current_segment.content.append(line[1:])
         current_diff.raw_code_diff += line + "\n"
 
     if current_diff:
@@ -146,9 +137,9 @@ def code_diff_around_segment(
     for k in range(start, end + 1):
         segment = diff.segments[k]
         if segment.type == "addition":
-            raw_code_diff.append(f"+{segment.content[0]}")
+            raw_code_diff.append("+" + "\n+".join(segment.content))
         elif segment.type == "deletion":
-            raw_code_diff.append(f"-{segment.content[0]}")
+            raw_code_diff.append("-" + "\n-".join(segment.content))
         else:
-            raw_code_diff.append(f" {segment.content[0]}")
+            raw_code_diff.append(" " + "\n ".join(segment.content))
     return "\n".join(raw_code_diff)

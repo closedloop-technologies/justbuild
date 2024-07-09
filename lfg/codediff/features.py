@@ -1,17 +1,6 @@
 import re
-import subprocess
-from pathlib import Path
-from typing import Dict, List, Union
 
-from lfg.codediff.code_diffs import CodeDiff
-from lfg.codediff.git_wrappers import get_diff, get_staged_changes
-
-
-def run_git_diff(old_file: Union[str, Path], new_file: Union[str, Path]) -> str:
-    if old_file is None:
-        return get_staged_changes(str(new_file))
-    else:
-        return get_diff(str(old_file), str(new_file))
+from lfg.codediff.git_diff_calculations import CodeDiff
 
 
 def is_likely_comment(line: str) -> bool:
@@ -46,29 +35,6 @@ def keyword_based_detection(inserted_line: str) -> bool:
         r"Code Was Here",
     ]
     return any(keyword in inserted_line for keyword in keywords)
-
-
-def llm_based_detection(diff_output: str) -> List[Dict[str, List[str]]]:
-    # TODO: Improve prompt to get more structured output
-    prompt = f"Analyze the following git diff and identify potential code replacements. For each replacement, provide the deleted lines and the inserted comment line:\n\n{diff_output}"
-    response = openai.Completion.create(
-        engine="gpt-3.5-turbo",
-        prompt=prompt,
-        max_tokens=500,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-    replacements = []
-    current_replacement = {}
-    for line in response.choices[0].text.split("\n"):
-        if line.startswith("Deleted:"):
-            current_replacement["deleted"] = [line[8:]]
-        elif line.startswith("Inserted:"):
-            current_replacement["inserted"] = [line[9:]]
-            replacements.append(current_replacement)
-            current_replacement = {}
-    return replacements
 
 
 def build_features(code_diff: CodeDiff):
