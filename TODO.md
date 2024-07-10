@@ -8,7 +8,6 @@
 
  - Update README to look more like https://github.com/di-sukharev/opencommit
    - Complete all sections
- - Add github pages for documentation and connect custom domain
 
 # Done
  - parallelize the llm calls and add retries
@@ -18,3 +17,4 @@
  - Logo , Tagline - Chat Assisted Programming, and other branding
    - "LFG! Chat Assisted Programming Tools to JustBuild it"
    - Emoji heavy - retro, gaming, fun, flaticon
+ - Add github pages for documentation and connect custom domain
