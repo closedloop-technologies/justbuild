@@ -13,7 +13,21 @@ app = typer.Typer(name="lfg", help="LFG! 🚀 Chat Assisted Programming Tools")
 
 
 @app.command()
-def paste(file_path: str = typer.Argument(...)):
+def paste(
+    file_path: str = typer.Argument(..., help="File path to paste the new code into"),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", "-d", help="Show the changes without saving"
+    ),
+    interactive: bool = typer.Option(
+        False, "--interactive", "-i", help="Review all changes interactively"
+    ),
+    fast: bool = typer.Option(
+        False, "--fast", "-F", help="Skip the LLM model, just use hard-coded rules"
+    ),
+    yes: bool = typer.Option(
+        False, "--yes", "-y", help="Automatically resolve conflicts using LLM"
+    ),
+):
     """
     Paste new code from clipboard into the specified file, preserving existing code where indicated.
     """
@@ -33,20 +47,35 @@ def paste(file_path: str = typer.Argument(...)):
         Path(file_path).touch()
 
     updates = merge_files(
-        old_file=file_path, new_file=tempfilename, target_file=file_path
+        old_file=file_path,
+        new_file=tempfilename,
+        target_file=file_path,
+        yes=yes,
+        fast=fast,
+        interactive=interactive,
+        dry_run=dry_run,
     )
     typer.echo(f"Code pasted and merged into {file_path} with updates:\n{updates}")
 
 
 @app.command()
 def merge(
-    updated_file: str = typer.Argument(..., help="Path to the modified file"),
-    old_file: str = typer.Option(..., help="Path to the original file"),
+    updated_file: str = typer.Argument(..., help="Modified file path"),
+    old_file: str = typer.Argument(..., help="Original file path"),
     target_file: str = typer.Option(
-        ..., help="Path to the output file, defaults to `new_file`"
+        None, help="Path to the output file, defaults to `new_file`"
     ),
-    auto_resolve: bool = typer.Option(
-        False, "--auto-resolve", "-a", help="Automatically resolve conflicts using LLM"
+    dry_run: bool = typer.Option(
+        False, "--dry-run", "-d", help="Show the changes without saving"
+    ),
+    interactive: bool = typer.Option(
+        False, "--interactive", "-i", help="Review all changes interactively"
+    ),
+    fast: bool = typer.Option(
+        False, "--fast", "-F", help="Skip the LLM model, just use hard-coded rules"
+    ),
+    yes: bool = typer.Option(
+        False, "--yes", "-y", help="Automatically resolve conflicts using LLM"
     ),
 ):
     """
@@ -62,7 +91,13 @@ def merge(
     target_file = Path(target_file) if target_file else updated_file
 
     updates = merge_files(
-        old_file=old_file, new_file=updated_file, target_file=target_file
+        old_file=old_file,
+        new_file=updated_file,
+        target_file=target_file,
+        yes=yes,
+        fast=fast,
+        interactive=interactive,
+        dry_run=dry_run,
     )
     typer.echo(
         f"LFG 🚀! {len(updates.get('change_log',[]))} Code Omissions Corrected: {target_file}"

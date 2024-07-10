@@ -57,3 +57,33 @@ def labeling(
         console.clear()
 
     return labeled_inputs
+
+
+def print_changes(change_log: list[dict]):
+    """
+    Print the changes to the console.
+    """
+    console = Console()
+    console.clear()
+
+    console.print(
+        Panel(
+            "[bold]Placeholder Comments removed[/bold]\n\n",
+            title="LFG Merge",
+            expand=False,
+        )
+    )
+
+    for i, change in enumerate(change_log):
+        console.print(
+            f"\n[bold]Approved diff to revert: {i+1} of {len(change_log)}[/bold]\n"
+        )
+        diff_syntax = Syntax(
+            change["git_diff"], "diff", theme="monokai", line_numbers=True
+        )
+        console.print(diff_syntax)
+        if i < len(change_log) - 1:
+            typer.confirm(
+                "Any key to continue:",
+                default=False,
+            )

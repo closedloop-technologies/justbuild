@@ -3,12 +3,14 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Tuple
 
-import typer
-
 from lfg.codediff.features import build_features
-from lfg.codediff.git_diff_calculations import code_diff_around_segment, parse_git_diff
+from lfg.codediff.git_diff_calculations import (
+    CodeDiffs,
+    code_diff_around_segment,
+    parse_git_diff,
+)
 from lfg.codediff.git_wrappers import get_changed_files, is_git_repo, run_git_diff
-from lfg.codediff.human_in_the_loop import labeling
+from lfg.codediff.human_in_the_loop import labeling, print_changes
 from lfg.codediff.models import GreedyModel
 from lfg.codediff.models_llm import LLMModel
 from lfg.config import Config
@@ -19,6 +21,10 @@ def merge(
     new_file: Optional[Path] = None,
     target_file: Optional[Path] = None,
     config: Optional[Config] = None,
+    yes=False,
+    fast=False,
+    interactive=False,
+    dry_run=False,
     **kwargs,
 ) -> dict:
     """Combine code into target_file from new_file and old_file
@@ -45,95 +51,109 @@ def merge(
     # Model Creation
     build_features(diffs)
 
-    # Run Models
-    # The goal of this model is to identify code sections were
-    # likely omitted from the new code and replaced with a placeholder comment
-
-    # The input is a list of code DiffSegments with dictionaries of features
-    # The output is a dictionary list with keys:
-    # label='code_omission', 'confidence'=0.9, 'omitted_code'=List[str], segment=DiffSegment
-    inputs = [
-        {
-            "_id": None,  # Counter to be added later
-            "_diff_index": i,
-            "_segment_index": j,
-            "_prev_segment": "\n".join(diffs.changes[i].segments[j - 1].content),
-            "_curr_segment": "\n".join(diffs.changes[i].segments[j].content),
-            "_diff": code_diff_around_segment(diffs, i, j),
-            **(segment.features or {}),
-        }
-        for i, diff in enumerate(diffs.changes)
-        for j, segment in enumerate(diff.segments)
-        if j > 0
-    ]
-    for counter, i in enumerate(inputs):
-        i["_id"] = counter
-
-    # print(code_diff_around_segment(diffs, 2, 4))
-
-    ## Less Granular - Only likely omitted code sections
-    ## Least Granular - Only look at known code placeholders
-
-    # Step 2: Merge Code
-    ## Greedy - Merge all code sections
-    predictions = GreedyModel().predict(inputs)
-
-    ## LLM - Use LLM to merge code sections
-    llm_filtered_inputs = [
-        i
-        for i, d in zip(inputs, predictions)
-        if (not d["is_code_omission"] and d["confidence"] < 0.9)
-        or (d["is_code_omission"] and d["confidence"] > 0.1)
-    ]
-    llm_filtered_predictions = LLMModel(config=config).predict(
-        llm_filtered_inputs, code_diffs=diffs
-    )
-
-    # import pandas as pd
-
-    # aggregating results
-
+    inputs = build_inputs(diffs)
     outputs = defaultdict(dict)
-    for pred in llm_filtered_predictions:
-        outputs[pred["_id"]]["llm"] = {
-            k: v for k, v in pred.items() if k in ["is_code_omission", "confidence"]
-        }
+
+    # Greedy Model - Use Greedy Model to predict code omissions
+    predictions = GreedyModel().predict(inputs)
     for pred in predictions:
         outputs[pred["_id"]]["naive"] = {
             k: v for k, v in pred.items() if k in ["is_code_omission", "confidence"]
         }
 
-    disagreements = [
+    low_confidence_samples = [
         i
-        for i, output in outputs.items()
-        if (
-            "llm" in output
-            and "naive" in output
-            and output["llm"]["is_code_omission"] != output["naive"]["is_code_omission"]
+        for i, d in zip(inputs, predictions)
+        if (not d["is_code_omission"] and d["confidence"] < 0.9)
+        or (d["is_code_omission"] and d["confidence"] > 0.1)
+    ]
+
+    # LLM Model - Use LLM Model to predict code omissions
+    disagreements = []
+    if not fast:
+        llm_outputs = run_llm_model(config, diffs, low_confidence_samples)
+        for i, output in llm_outputs.items():
+            outputs[i]["llm"] = output
+
+        disagreements = [
+            i
+            for i, output in outputs.items()
+            if (
+                "llm" in output
+                and "naive" in output
+                and output["llm"]["is_code_omission"]
+                != output["naive"]["is_code_omission"]
+            )
+        ]
+
+    # Human in the Loop - Prompt user to resolve code omissions
+    if interactive:  # Broad: Loop on all eligible samples
+        inputs_for_humans = [
+            {"_id": i, "_diff": sample["_diff"]}
+            for i, sample in enumerate(low_confidence_samples)
+            if sample is not None
+        ]
+    elif not fast:  # Narrow: Loop only where disagreement between Greedy and LLM
+        inputs_for_humans = [
+            {"_id": i, "_diff": inputs[i]["_diff"]} for i in disagreements
+        ]
+    else:  # All the positive samples from Greedy model
+        inputs_for_humans = [
+            {"_id": i, "_diff": sample["_diff"]}
+            for i, sample in enumerate(low_confidence_samples)
+            if sample["is_code_omission"]
+        ]
+
+    if not yes:
+        human_labels = labeling(
+            inputs_for_humans, label="is_code_omission", default_confidence=0.99
         )
-    ]
-    # Create a user prompt for each code section in llm_filtered_inputs to manually y/n
-    # for each code section
+        for pred in human_labels:
+            outputs[pred["_id"]]["human"] = {
+                k: v for k, v in pred.items() if k in ["is_code_omission", "confidence"]
+            }
 
-    # Options:
-    # Broad: Loop only where confidence is low (llm_filtered_inputs)
-    broad_samples = [
-        {"_id": i, "_diff": sample["_diff"]}
-        for i, sample in enumerate(llm_filtered_inputs)
-        if sample is not None
-    ]
-    # Narrow: Loop only where disagreement between greedy and llm
-    narrow_samples = [{"_id": i, "_diff": inputs[i]["_diff"]} for i in disagreements]
+    determine_final_output(outputs)
 
-    human_labels = labeling(
-        narrow_samples, label="is_code_omission", default_confidence=0.99
-    )
-    for pred in human_labels:
-        outputs[pred["_id"]]["human"] = {
+    # Where 'final' outputs are True, replace the code with the omitted code
+    merged_code, change_log = _merge_code(new_file, inputs, outputs)
+
+    if dry_run:
+        # Print the changes
+        print_changes(change_log)
+    else:
+        # Write the changes to the target file
+        target_file.write_text(merged_code)
+
+    return {
+        "old_file": old_file,
+        "new_file": new_file,
+        "target_file": target_file,
+        "changes": change_log,
+        "labels": human_labels,
+    }
+
+
+def run_llm_model(
+    config: Config,
+    diffs: CodeDiffs,
+    inputs: list[dict],
+):
+
+    llm_filtered_predictions = LLMModel(config=config).predict(inputs, code_diffs=diffs)
+    outputs = defaultdict(dict)
+    for pred in llm_filtered_predictions:
+        outputs[pred["_id"]] = {
             k: v for k, v in pred.items() if k in ["is_code_omission", "confidence"]
         }
 
-    # Merge Outputs - this is a naive way that ignores confidence
+    return outputs
+
+
+def determine_final_output(outputs: dict):
+    """Merge Outputs - this is a naive way that ignores confidence
+    sets 'final' output based on the human, llm, or naive output (in that order)
+    """
     for i, output in outputs.items():
         if "human" in output:
             outputs[i]["final"] = output["human"]
@@ -142,9 +162,9 @@ def merge(
         else:
             outputs[i]["final"] = output["naive"]
 
-    # Where 'final' outputs are True, replace the code with the omitted code
+
+def _merge_code(new_file, inputs, outputs):
     merged_code = new_file.read_text()
-    {k: v["final"] for k, v in outputs.items() if v["final"]["is_code_omission"]}
 
     change_log = []
     for i, output in outputs.items():
@@ -164,18 +184,35 @@ def merge(
                 }
             )
 
-    target_file.write_text(merged_code)
-    return {
-        "old_file": old_file,
-        "new_file": new_file,
-        "target_file": target_file,
-        "changes": change_log,
-        "labels": human_labels,
-    }
+    return merged_code, change_log
+
+
+def build_inputs(diffs):
+    inputs = [
+        {
+            "_id": None,  # Counter to be added later
+            "_diff_index": i,
+            "_segment_index": j,
+            "_prev_segment": "\n".join(diffs.changes[i].segments[j - 1].content),
+            "_curr_segment": "\n".join(diffs.changes[i].segments[j].content),
+            "_diff": code_diff_around_segment(diffs, i, j),
+            **(segment.features or {}),
+        }
+        for i, diff in enumerate(diffs.changes)
+        for j, segment in enumerate(diff.segments)
+        if j > 0
+    ]
+    for counter, i in enumerate(inputs):
+        i["_id"] = counter
+    return inputs
 
 
 def merge_all(
     config: Optional[Config] = None,
+    yes=False,
+    fast=False,
+    interactive=False,
+    dry_run=False,
     **kwargs,
 ) -> dict:
     if config is None:
@@ -194,7 +231,15 @@ def merge_all(
     for file in changed_files:
         try:
             results[file] = merge(
-                old_file=None, new_file=file, target_file=file, config=config, **kwargs
+                old_file=None,
+                new_file=file,
+                target_file=file,
+                config=config,
+                yes=yes,
+                fast=fast,
+                interactive=interactive,
+                dry_run=dry_run,
+                **kwargs,
             )
         except Exception as e:
             results[file] = {"error": str(e)}
@@ -206,6 +251,10 @@ def merge_code(
     new_code: str,
     file_type_suffix: Optional[str] = None,
     config: Optional[Config] = None,
+    yes=False,
+    fast=False,
+    interactive=False,
+    dry_run=False,
     **kwargs,
 ) -> Tuple[str, dict]:
     if config is None:
@@ -225,7 +274,17 @@ def merge_code(
     with open(old_file, "w") as file:
         file.write(old_code)
 
-    updates = merge(old_file, new_file, target_file, config=config, **kwargs)
+    updates = merge(
+        old_file,
+        new_file,
+        target_file,
+        config=config,
+        yes=yes,
+        fast=fast,
+        interactive=interactive,
+        dry_run=dry_run,
+        **kwargs,
+    )
     output = target_file.read_text()
     target_file.unlink()
     new_file.unlink()
