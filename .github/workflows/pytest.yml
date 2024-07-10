@@ -64,4 +64,4 @@ jobs:
         - name: Run tests
           run: |
             source ${{ github.workspace }}/venv/bin/activate
-            pytest tests/ --cov=justbuild
+            python -m pytest tests/ --cov=justbuild
