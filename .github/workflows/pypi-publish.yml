@@ -51,9 +51,6 @@ jobs:
       - name: Build Package
         run: python -m build
 
-      - name: Package info
-        run: cat pyproject.toml
-
       #----------------------------------------------
       #              publish to PyPI
       #----------------------------------------------
