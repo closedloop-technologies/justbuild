@@ -4,7 +4,8 @@ from pathlib import Path
 import pyperclip
 import typer
 
-from lfg.codediff.merging import merge_all, merge as merge_files
+from lfg.codediff.merging import merge as merge_files
+from lfg.codediff.merging import merge_all
 from lfg.config import load_config
 
 config = load_config()

@@ -5,11 +5,12 @@ from typing import Optional, Tuple
 
 import typer
 
-from lfg.codediff.git_diff_calculations import code_diff_around_segment, parse_git_diff
 from lfg.codediff.features import build_features
+from lfg.codediff.git_diff_calculations import code_diff_around_segment, parse_git_diff
 from lfg.codediff.git_wrappers import get_changed_files, is_git_repo, run_git_diff
 from lfg.codediff.human_in_the_loop import labeling
-from lfg.codediff.models import GreedyModel, LLMModel
+from lfg.codediff.models import GreedyModel
+from lfg.codediff.models_llm import LLMModel
 from lfg.config import Config
 
 
