@@ -18,14 +18,11 @@ class Config:
 
     @classmethod
     def create(cls):
-        model_enabled = os.getenv("OPENAI_API_KEY") is not None
+        api_key = os.getenv("OPENAI_API_KEY")
+        model_enabled = api_key is not None
         return cls(
             git_installed=is_git_installed(),
-            client=(
-                OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-                if model_enabled
-                else OpenAI()
-            ),
+            client=OpenAI(api_key=api_key) if model_enabled else None,
             model_enabled=model_enabled,
         )
 
