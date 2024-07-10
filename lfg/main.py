@@ -8,7 +8,7 @@ from lfg.codediff.merging import merge_all, merge as merge_files
 from lfg.config import load_config
 
 config = load_config()
-app = typer.Typer(name="lfg", help="Chat Assisted Programming Tools")
+app = typer.Typer(name="lfg", help="LFG! 🚀 Chat Assisted Programming Tools")
 
 
 @app.command()
@@ -69,3 +69,6 @@ def merge(
 
 
 # Entry point for the CLI is the `app` object loaded from __main__.py
+@app.callback(invoke_without_command=True)
+def banner():
+    typer.echo("Welcome to LFG! 🚀")

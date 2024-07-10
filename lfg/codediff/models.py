@@ -21,7 +21,9 @@ class GreedyModel:
             return {"is_code_omission": False, "confidence": 0.95}
 
         fcast = (
-            features.get("segment_size") == 1 and features.get("prev_segment_size") > 10
+            features.get("segment_size") == 1
+            and features.get("prev_segment_size") > 5
+            and (features.get("has_ellipsis") or features.get("has_comment"))
         )
         return {
             "is_code_omission": fcast,
@@ -72,6 +74,16 @@ A placeholder comment is a descriptive note within the code that indicates a sec
 5. **Purpose Indication**:
    - Determine if the comment clearly indicates its purpose, such as explaining the functionality or section of the code that is not shown.
 
+6. **Length Differences**:
+   - There are a significant number of lines in the original code that are missing in the new code, indicating a placeholder comment.
+   - The new code is much shorter than the original code, suggesting omitted content.
+
+7. **Code Omission Indicators**:
+    - Look for specific phrases like "Code Was Here" or "rest of the previous code remains the same" that are commonly used as placeholders.
+
+8. **Code Comments**:
+    - The majority of the new code in the diff is comments or placeholder text.
+
 ### Example of a Placeholder Comment in a `git diff`
 ```diff
 -                <div className="flex items-center border-2 border-gray-300 rounded-lg p-2">
@@ -108,10 +120,80 @@ A placeholder comment is a descriptive note within the code that indicates a sec
 -                </div>
 +                {/* ... (form content remains the same) ... */}
 ```
+Response: yes
+
+### Negative Example: Not a Placeholder Comment in a `git diff`
+```diff
+ } from "~/models/brainstorm.server";
+ import invariant from "tiny-invariant";
+
+-import DynamicComponent from '~/components/DynamicComponent';
++import DynamicComponent from "~/components/DynamicComponent";
++import { Button } from "~/components/ui/button";
++import {
++    DropdownMenu,
++    DropdownMenuContent,
++    DropdownMenuItem,
++    DropdownMenuTrigger,
++} from "~/components/ui/dropdown-menu";
++import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
+
+ interface BrainstormingBotPageProps {
+     currentBrainstorm: BrainstormSession;
+```
+Response: no
+
+### Negative Example: Not a Placeholder Comment in a `git diff`
+```
+     return (
+-        <div className="flex flex-col h-screen p-4">
++        <div className="flex flex-col p-4">
++            {/* Header */}
+             <h1 className="text-2xl font-bold mb-4">
+                 Task: {currentBrainstorm.title}
+             </h1>
+```
+Response: no
+
+### Negative Example: Not a Placeholder Comment in a `git diff`
+```diff
+             </div>
+
+-            {/* Display brainstorming results here */}
+-            <div className="border-2 border-gray-300 rounded-lg p-2 flex-grow overflow-y-auto">
+-                {samples &&
+-                    samples?.map((input: any, index: number) => (
+-                        <DynamicComponent
+-                            componentName={activeDataView}
+-                            key_name={index}
+-                            props={{
+-                                data: input
+-                            }}
+-                        />
+-                    ))}
++            {/* Scrollable results area */}
++            <div className="flex-grow overflow-y-auto">
++                <div className="border-2 border-gray-300 rounded-lg p-2 mb-4">
++                    {samples &&
++                        samples?.map((input: any, index: number) => (
++                            <DynamicComponent
++                                componentName={activeDataView}
++                                key_name={index}
++                                props={{
++                                    data: input,
++                                }}
++                            />
++                        ))}
++                </div>
+             </div>
+```
+Response: no
 
 By following this checklist, you can effectively identify placeholder comments in a `git diff` and understand their purpose within the code.
 
 Think step by step about the context of the code and the purpose of the diff to determine if the new code is a placeholder for the original code.
+
+Start your response with a list of the features you identified in the diff, followed by your answer to the question below.
 
 Your answer must end with 'yes' or 'no' to indicate whether the new code is a placeholder comment for the original code."""
 
@@ -140,14 +222,23 @@ Is the following line a placeholder comment for the original code? (yes/no)
             raise RuntimeError("OpenAI API did not return a response")
 
         if len(result.choices):
-            response = result.choices[0].message.content.lower().split()[::-1]
+            content = result.choices[0].message.content
+            response = content.lower().split()[::-1]
             for w in response:
                 # remove punctuation
                 w = re.sub(r"[^\w\s]", "", w)
                 if w == "yes":
-                    return {"confidence": 0.95, "is_code_omission": True}
+                    return {
+                        "confidence": 0.95,
+                        "is_code_omission": True,
+                        "response": content,
+                    }
                 elif w == "no":
-                    return {"confidence": 0.95, "is_code_omission": False}
+                    return {
+                        "confidence": 0.95,
+                        "is_code_omission": False,
+                        "response": content,
+                    }
         return {"confidence": 0.95, "is_code_omission": False}
 
     def predict(self, features: List[dict], code_diffs: CodeDiffs) -> List[dict]:

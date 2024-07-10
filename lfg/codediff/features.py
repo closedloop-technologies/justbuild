@@ -1,24 +1,42 @@
 import re
+from functools import lru_cache
 
 from lfg.codediff.git_diff_calculations import CodeDiff
 
 
 def is_likely_comment(line: str) -> bool:
-    comment_patterns = [
-        r"^\s*#",  # Python, Ruby, Perl, Shell
-        r"^\s*//",  # C, C++, Java, JavaScript
-        r"^\s*/\*",  # C, C++, Java, JavaScript (multi-line start)
-        r"^\s*--",  # SQL, Lua
-        r"^\s*%",  # Matlab, LaTeX
-        r"^\s*;",  # Assembly, Lisp
-        r"^\s*<!--",  # HTML, XML
-        r"^\s*\(\*",  # OCaml
-        r"^\s*\{-",  # Haskell
-    ]
-    return any(re.match(pattern, line) for pattern in comment_patterns)
+    @lru_cache(maxsize=1)
+    def get_compiled_patterns():
+        patterns = [
+            r"^\s*#",  # Python, Ruby, Perl, Shell, Makefile
+            r"^\s*//",  # C, C++, Java, JavaScript, Go, Rust, Swift
+            r"^\s*/\*",  # C, C++, Java, JavaScript, CSS (multi-line start)
+            r"\*/\s*$",  # Multi-line comment end
+            r"^\s*\{/\*",  # TypeScript, JavaScript (alternative multi-line)
+            r"^\s*--",  # SQL, Lua, Haskell
+            r"^\s*%",  # Matlab, LaTeX, Prolog
+            r"^\s*;",  # Assembly, Lisp, Clojure
+            r"^\s*<!--",  # HTML, XML, Markdown
+            r"^\s*\(\*",  # OCaml, Pascal
+            r"^\s*\{-",  # Haskell (multi-line start)
+            r"^\s*'''",  # Python (multi-line string/comment)
+            r'^\s*"""',  # Python (multi-line string/comment)
+            r"^\s*REM\s",  # BASIC, batch files
+            r"^\s*\/\/\/",  # Swift, Kotlin (documentation comments)
+            r"^\s*<!",  # DTD
+            r"^\s*--\[\[",  # Lua (multi-line start)
+            r"^\s*=begin",  # Ruby (multi-line start)
+        ]
+        return [re.compile(pattern, re.IGNORECASE) for pattern in patterns]
+
+    # Get the compiled patterns (will be cached after first call)
+    compiled_patterns = get_compiled_patterns()
+
+    # Check if any pattern matches
+    return any(pattern.match(line) for pattern in compiled_patterns)
 
 
-def is_code_placeholder(line: str) -> bool:
+def is_known_code_placeholder(line: str) -> bool:
     placeholders = [
         r"// ... \(rest of the previous code remains the same\)",
         r"// Code Was Here",
@@ -30,7 +48,6 @@ def is_code_placeholder(line: str) -> bool:
 
 def keyword_based_detection(inserted_line: str) -> bool:
     keywords = [
-        r"\.\.\.",
         r"rest of the previous code remains the same",
         r"Code Was Here",
     ]
@@ -70,7 +87,11 @@ def build_features(code_diff: CodeDiff):
                 is_likely_comment(line) for line in segment.content
             )
             segment.features["has_placeholder_word"] = any(
-                is_code_placeholder(line) for line in segment.content
+                is_known_code_placeholder(line) for line in segment.content
+            )
+            # Ellipsis is a common placeholder for code
+            segment.features["has_ellipsis"] = any(
+                "..." in line for line in segment.content
             )
             segment.features["has_keyword"] = any(
                 keyword_based_detection(line) for line in segment.content
