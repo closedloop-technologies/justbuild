@@ -1,35 +1,42 @@
 import re
-import subprocess
-from pathlib import Path
-from typing import Dict, List, Union
+from functools import lru_cache
 
-from lfg.code_diffs import CodeDiff
-from lfg.helpers import get_diff, get_staged_changes
-
-
-def run_git_diff(old_file: Union[str, Path], new_file: Union[str, Path]) -> str:
-    if old_file is None:
-        return get_staged_changes(str(new_file))
-    else:
-        return get_diff(str(old_file), str(new_file))
+from lfg.codediff.git_diff_calculations import CodeDiff
 
 
 def is_likely_comment(line: str) -> bool:
-    comment_patterns = [
-        r"^\s*#",  # Python, Ruby, Perl, Shell
-        r"^\s*//",  # C, C++, Java, JavaScript
-        r"^\s*/\*",  # C, C++, Java, JavaScript (multi-line start)
-        r"^\s*--",  # SQL, Lua
-        r"^\s*%",  # Matlab, LaTeX
-        r"^\s*;",  # Assembly, Lisp
-        r"^\s*<!--",  # HTML, XML
-        r"^\s*\(\*",  # OCaml
-        r"^\s*\{-",  # Haskell
-    ]
-    return any(re.match(pattern, line) for pattern in comment_patterns)
+    @lru_cache(maxsize=1)
+    def get_compiled_patterns():
+        patterns = [
+            r"^\s*#",  # Python, Ruby, Perl, Shell, Makefile
+            r"^\s*//",  # C, C++, Java, JavaScript, Go, Rust, Swift
+            r"^\s*/\*",  # C, C++, Java, JavaScript, CSS (multi-line start)
+            r"\*/\s*$",  # Multi-line comment end
+            r"^\s*\{/\*",  # TypeScript, JavaScript (alternative multi-line)
+            r"^\s*--",  # SQL, Lua, Haskell
+            r"^\s*%",  # Matlab, LaTeX, Prolog
+            r"^\s*;",  # Assembly, Lisp, Clojure
+            r"^\s*<!--",  # HTML, XML, Markdown
+            r"^\s*\(\*",  # OCaml, Pascal
+            r"^\s*\{-",  # Haskell (multi-line start)
+            r"^\s*'''",  # Python (multi-line string/comment)
+            r'^\s*"""',  # Python (multi-line string/comment)
+            r"^\s*REM\s",  # BASIC, batch files
+            r"^\s*\/\/\/",  # Swift, Kotlin (documentation comments)
+            r"^\s*<!",  # DTD
+            r"^\s*--\[\[",  # Lua (multi-line start)
+            r"^\s*=begin",  # Ruby (multi-line start)
+        ]
+        return [re.compile(pattern, re.IGNORECASE) for pattern in patterns]
+
+    # Get the compiled patterns (will be cached after first call)
+    compiled_patterns = get_compiled_patterns()
+
+    # Check if any pattern matches
+    return any(pattern.match(line) for pattern in compiled_patterns)
 
 
-def is_code_placeholder(line: str) -> bool:
+def is_known_code_placeholder(line: str) -> bool:
     placeholders = [
         r"// ... \(rest of the previous code remains the same\)",
         r"// Code Was Here",
@@ -41,34 +48,10 @@ def is_code_placeholder(line: str) -> bool:
 
 def keyword_based_detection(inserted_line: str) -> bool:
     keywords = [
-        r"\.\.\.",
         r"rest of the previous code remains the same",
         r"Code Was Here",
     ]
     return any(keyword in inserted_line for keyword in keywords)
-
-
-def llm_based_detection(diff_output: str) -> List[Dict[str, List[str]]]:
-    # TODO: Improve prompt to get more structured output
-    prompt = f"Analyze the following git diff and identify potential code replacements. For each replacement, provide the deleted lines and the inserted comment line:\n\n{diff_output}"
-    response = openai.Completion.create(
-        engine="gpt-3.5-turbo",
-        prompt=prompt,
-        max_tokens=500,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-    replacements = []
-    current_replacement = {}
-    for line in response.choices[0].text.split("\n"):
-        if line.startswith("Deleted:"):
-            current_replacement["deleted"] = [line[8:]]
-        elif line.startswith("Inserted:"):
-            current_replacement["inserted"] = [line[9:]]
-            replacements.append(current_replacement)
-            current_replacement = {}
-    return replacements
 
 
 def build_features(code_diff: CodeDiff):
@@ -104,7 +87,11 @@ def build_features(code_diff: CodeDiff):
                 is_likely_comment(line) for line in segment.content
             )
             segment.features["has_placeholder_word"] = any(
-                is_code_placeholder(line) for line in segment.content
+                is_known_code_placeholder(line) for line in segment.content
+            )
+            # Ellipsis is a common placeholder for code
+            segment.features["has_ellipsis"] = any(
+                "..." in line for line in segment.content
             )
             segment.features["has_keyword"] = any(
                 keyword_based_detection(line) for line in segment.content
