@@ -1,7 +1,7 @@
 import re
 from functools import lru_cache
 
-from lfg.codediff.git_diff_calculations import CodeDiff
+from justbuild.codediff.git_diff_calculations import CodeDiff
 
 
 def is_likely_comment(line: str) -> bool:

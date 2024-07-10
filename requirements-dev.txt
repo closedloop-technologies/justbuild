@@ -1,0 +1,16 @@
+twine
+black
+coverage
+eradicate
+isort
+mypy
+pre-commit-hooks
+pre-commit
+pycodestyle
+pyflakes
+pytest-cov
+pytest
+radon
+vulture
+pip-upgrader
+pyupgrade

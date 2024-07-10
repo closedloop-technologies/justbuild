@@ -4,8 +4,8 @@ from typing import List
 
 import tqdm
 
-from lfg.codediff.git_diff_calculations import CodeDiffs
-from lfg.config import Config
+from justbuild.codediff.git_diff_calculations import CodeDiffs
+from justbuild.config import Config
 
 SYSTEM_PROMPT = """Analyze the following `git diff` output to determine if the original code was replaced with a "Placeholder Comment":
 

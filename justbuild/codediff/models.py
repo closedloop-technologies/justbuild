@@ -3,8 +3,8 @@ from typing import List
 
 import tqdm
 
-from lfg.codediff.git_diff_calculations import CodeDiffs
-from lfg.config import Config
+from justbuild.codediff.git_diff_calculations import CodeDiffs
+from justbuild.config import Config
 
 
 class GreedyModel:
@@ -17,9 +17,17 @@ class GreedyModel:
         pass  # no training required
 
     def _formula(self, features: dict) -> dict:
+        # Per the definition of a code omission, we are looking for 'replaced_previous' changes
         if features.get("change_sequence_type") != "replaced_previous":
             return {"is_code_omission": False, "confidence": 0.95}
 
+        # A common false positive for the LLM model
+        if (
+            features.get("segment_size") >= features.get("prev_segment_size")
+        ) and features.get("segment_size") >= 3:
+            return {"is_code_omission": False, "confidence": 0.90}
+
+        # Common predictive features for code omissions
         fcast = (
             features.get("segment_size") == 1
             and features.get("prev_segment_size") > 5

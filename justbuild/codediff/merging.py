@@ -3,17 +3,17 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Optional, Tuple
 
-from lfg.codediff.features import build_features
-from lfg.codediff.git_diff_calculations import (
+from justbuild.codediff.features import build_features
+from justbuild.codediff.git_diff_calculations import (
     CodeDiffs,
     code_diff_around_segment,
     parse_git_diff,
 )
-from lfg.codediff.git_wrappers import get_changed_files, is_git_repo, run_git_diff
-from lfg.codediff.human_in_the_loop import labeling, print_changes
-from lfg.codediff.models import GreedyModel
-from lfg.codediff.models_llm import LLMModel
-from lfg.config import Config
+from justbuild.codediff.git_wrappers import get_changed_files, is_git_repo, run_git_diff
+from justbuild.codediff.human_in_the_loop import labeling, print_changes
+from justbuild.codediff.models import GreedyModel
+from justbuild.codediff.models_llm import LLMModel
+from justbuild.config import Config
 
 
 def merge(
@@ -104,7 +104,9 @@ def merge(
             if sample["is_code_omission"]
         ]
 
-    if not yes:
+    if yes:
+        human_labels = None
+    else:
         human_labels = labeling(
             inputs_for_humans, label="is_code_omission", default_confidence=0.99
         )

@@ -1,15 +1,23 @@
 import tempfile
 from pathlib import Path
-
+import typer
+from rich import print as rprint
+from rich.panel import Panel
+from rich.text import Text
+from rich.table import Table
 import pyperclip
 import typer
-
-from lfg.codediff.merging import merge as merge_files
-from lfg.codediff.merging import merge_all
-from lfg.config import load_config
+from justbuild import __version__ as version, __description__ as short_description
+from justbuild.codediff.merging import merge as merge_files
+from justbuild.codediff.merging import merge_all
+from justbuild.config import load_config
+from justbuild.ui import show_full_banner
 
 config = load_config()
-app = typer.Typer(name="lfg", help="LFG! 🚀 Chat Assisted Programming Tools")
+app = typer.Typer(
+    name="lfg",
+    help="🚀 LFG! 💬 Chat Assisted Programming 💻 Merge LLM-generated code into your repo",
+)
 
 
 @app.command()
@@ -104,7 +112,48 @@ def merge(
     )
 
 
-# Entry point for the CLI is the `app` object loaded from __main__.py
+def display_banner():
+    """Pagga font from figlet."""
+    banner = """[bold yellow]
+ ░▀▀█░█░█░█▀▀░▀█▀░█▀▄░█░█░▀█▀░█░░░█▀▄
+ ░░░█░█░█░▀▀█░░█░░█▀▄░█░█░░█░░█░░░█░█
+ ░▀▀░░▀▀▀░▀▀▀░░▀░░▀▀░░▀▀▀░▀▀▀░▀▀▀░▀▀░
+[/bold yellow]
+
+🚀 [bold red]lfg[/bold red] 💬 Chat Assisted Programming 💻"""
+    rprint(Panel(banner, border_style="bold green", expand=False))
+
+
+def display_info():
+    table = Table(show_header=False, box=None)
+    table.add_column("Key", style="cyan", no_wrap=True)
+    table.add_column("Value", style="magenta")
+
+    table.add_row("Description", short_description)
+    table.add_row("Version", version)
+    table.add_row("Author", "Sean Kruzel @ ClosedLoop.Tech")
+    table.add_row("License", "MIT")
+
+    rprint(table)
+
+
+def display_commands():
+    commands = [
+        ("paste", "Paste new code from clipboard into a file"),
+        ("merge", "Merge changes between files or in the entire repo"),
+    ]
+
+    table = Table(title="Available Commands", box=None)
+    table.add_column("Command", style="cyan", no_wrap=True)
+    table.add_column("Description", style="green")
+
+    for cmd, desc in commands:
+        table.add_row(cmd, desc)
+
+    rprint(table)
+
+
 @app.callback(invoke_without_command=True)
-def banner():
-    typer.echo("Welcome to LFG! 🚀")
+def banner(ctx: typer.Context):
+    if ctx.invoked_subcommand is None:
+        show_full_banner("lfg", show_commands=False)

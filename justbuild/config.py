@@ -4,11 +4,12 @@ from dataclasses import dataclass
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from lfg.codediff.git_wrappers import is_git_installed
+from justbuild.codediff.git_wrappers import is_git_installed
 
 
 @dataclass
 class Config:
+    name: str = "justbuild"
     model_temperature: float = 0.0
     model_name: str = "gpt-3.5-turbo"
     git_installed: bool = False
