@@ -8,6 +8,7 @@
 
  - Update README to look more like https://github.com/di-sukharev/opencommit
    - Complete all sections
+ - Add a demo video
 
 # Done
  - parallelize the llm calls and add retries
