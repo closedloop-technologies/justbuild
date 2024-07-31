@@ -1,233 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>JustBuild.ai: CLI Tools for Chat Assisted Programming</title>
-
-    <!-- Open Graph tags -->
-    <meta property="og:title" content="JustBuild.ai: CLI Tools for Chat Assisted Programming">
-    <meta property="og:description"
-        content="JustBuild.ai enhances your Chat Assisted Programming experience by smoothing out the workflow when using ChatGPT, Claude, Copilot, or other AI assistants for coding, making your development process faster and more efficient.">
-    <meta property="og:image" content="https://justbuild.ai/justbuild-icon.webp">
-    <meta property="og:url" content="https://justbuild.ai">
-    <meta property="og:type" content="website">
-
-    <!-- Twitter Card tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="JustBuild.ai: CLI Tools for Chat Assisted Programming">
-    <meta name="twitter:description"
-        content="JustBuild.ai enhances your Chat Assisted Programming experience by smoothing out the workflow when using ChatGPT, Claude, Copilot, or other AI assistants for coding, making your development process faster and more efficient.">
-    <meta name="twitter:image" content="https://justbuild.ai/justbuild-icon.webp">
-
-    <!-- Additional meta tags -->
-    <meta name="description"
-        content="JustBuild.ai enhances your Chat Assisted Programming experience by smoothing out the workflow when using ChatGPT, Claude, Copilot, or other AI assistants for coding, making your development process faster and more efficient.">
-    <meta name="keywords"
-        content="justbuild, chat assisted programming, AI coding, ChatGPT, Claude, Copilot, code integration, smart merging">
-    <meta name="author" content="ClosedLoop Technologies">
-
-    <!-- Favicon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicons/apple-touch-icon.png?v=1.0">
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicons/favicon-32x32.png?v=1.0">
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicons/favicon-16x16.png?v=1.0">
-    <link rel="manifest" href="/favicons/site.webmanifest?v=1.0">
-    <link rel="mask-icon" href="/favicons/safari-pinned-tab.svg?v=1.0" color="#1E90FF">
-    <link rel="shortcut icon" href="/favicons/favicon.ico?v=1.0">
-    <meta name="msapplication-TileColor" content="#FFD700">
-    <meta name="msapplication-TileImage" content="/favicons/mstile-144x144.png?v=1.0">
-    <meta name="msapplication-config" content="/favicons/browserconfig.xml?v=1.0">
-    <meta name="theme-color" content="#FFD700">
-
-    <!-- Styles -->
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JustBuild.ai: Revolutionizing AI-Coding Assistants</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        .pixelated {
-            font-family: 'Press Start 2P', cursive;
-        }
+      .pixelated {
+        font-family: "Press Start 2P", cursive;
+      }
 
-        .retro-bg {
-            background-color: #0f172a;
-        }
+      .retro-bg {
+        background-color: #0f172a;
+      }
 
-        .retro-text {
-            color: #38bdf8;
-        }
+      .retro-text {
+        color: #38bdf8;
+      }
 
-        .retro-highlight {
-            color: #f472b6;
-        }
+      .retro-highlight {
+        color: #f472b6;
+      }
 
-        .hero-gradient {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
-        }
+      .hero-gradient {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+      }
     </style>
+  </head>
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0JTQLLLFJX"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-
-        gtag('config', 'G-0JTQLLLFJX');
-    </script>
-</head>
-
-<body class="retro-bg text-gray-100 font-sans">
-    <header class="py-6 border-b border-gray-700 sticky top-0 bg-opacity-90 backdrop-filter backdrop-blur-lg z-50">
-        <div class="container mx-auto px-4">
-            <div class="flex items-center justify-between">
-                <img src="justbuild-icon.webp" alt="JustBuild.ai" class="w-12 h-12 mx-2">
-                <div class="pixelated text-2xl sm:text-3xl retro-text">
-                    <img src="/assets/justbuild-text-logo.png" alt="JustBuild.ai" class="h-12">
-                </div>
-                <nav class="hidden sm:block">
-                    <a href="#about" class="retro-text hover:retro-highlight px-4 py-2">About</a>
-                    <a href="#features" class="retro-text hover:retro-highlight px-4 py-2">Features</a>
-                    <a href="#getting-started" class="retro-text hover:retro-highlight px-4 py-2">Get Started</a>
-                    <a href="#use-cases" class="retro-text hover:retro-highlight px-4 py-2">Use Cases</a>
-                    <a href="https://github.com/closedloop-technologies/justbuild"
-                        class="retro-text hover:retro-highlight px-4 py-2">GitHub</a>
-                </nav>
-            </div>
+  <body class="retro-bg text-gray-100 font-sans">
+    <header
+      class="py-6 border-b border-gray-700 sticky top-0 bg-opacity-90 backdrop-filter backdrop-blur-lg z-50"
+    >
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between">
+          <img
+            src="justbuild-icon.webp"
+            alt="JustBuild.ai"
+            class="w-12 h-12 mx-2"
+          />
+          <div class="pixelated text-2xl sm:text-3xl retro-text">
+            <img
+              src="/assets/justbuild-text-logo.png"
+              alt="JustBuild.ai"
+              class="h-12"
+            />
+          </div>
+          <nav class="hidden sm:block">
+            <a href="#about" class="retro-text hover:retro-highlight px-4 py-2"
+              >About</a
+            >
+            <a
+              href="#challenge"
+              class="retro-text hover:retro-highlight px-4 py-2"
+              >The Challenge</a
+            >
+            <a href="#tools" class="retro-text hover:retro-highlight px-4 py-2"
+              >Our Tools</a
+            >
+            <a
+              href="#next-steps"
+              class="retro-text hover:retro-highlight px-4 py-2"
+              >Next Steps</a
+            >
+          </nav>
         </div>
+      </div>
     </header>
 
-    <main class="container mx-auto px-4 py-12">
-        <section id="hero" class="hero-gradient rounded-lg shadow-2xl mb-24 p-8 sm:p-8">
-            <div class="flex flex-col sm:flex-row items-center">
-                <div class="w-full sm:w-1/2 mb-8 sm:mb-0">
-                    <div class="inline-block px-4 py-2 mb-4 rounded-full bg-pink-500 bg-opacity-80 shadow-lg">
-                        <p class="text-lg sm:text-xl font-semibold text-white m-0">
-                            CLI tools for
-                        </p>
-                    </div>
-                    <h1 class="pixelated text-4xl lg:text-6xl mb-12 text-white">AI-Assisted Coding
-                    </h1>
-                    <p class="text-xl sm:text-2xl mb-8 text-gray-200">
-                        🚀 LFG! JustBuild it
-                    </p>
-                    <a href="#getting-started"
-                        class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">Get
-                        Started</a>
-                </div>
-                <div class="w-full sm:w-1/2 flex justify-center sm:mt-12">
-                    <img src="justbuild-icon.webp" alt="JustBuild.ai" class="w-64 h-64 mr-2">
-                </div>
+    <main class="container mx-auto px-4 py-12 max-w-5xl">
+      <section
+        id="hero"
+        class="hero-gradient rounded-lg shadow-2xl mb-24 p-8 sm:p-12"
+      >
+        <div class="flex flex-col sm:flex-row items-center">
+          <div class="w-full sm:w-1/2 mb-8 sm:mb-0">
+            <div
+              class="inline-block px-4 py-2 mb-4 rounded-full bg-pink-500 bg-opacity-80 shadow-lg"
+            >
+              <p class="text-lg sm:text-xl font-semibold text-white m-0">
+                Build 10x more with
+              </p>
             </div>
-        </section>
+            <h1 class="pixelated text-4xl lg:text-5xl mb-8 text-white">
+              AI-Coding Assistants
+            </h1>
+            <p class="text-xl sm:text-2xl mb-8 text-gray-200">
+              Workflows, templates and tools to keep you in the flow
+            </p>
+            <a
+              href="#about"
+              class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block"
+              >🚀 LFG! 🚀
+            </a>
+          </div>
+          <div class="w-full sm:w-1/2 flex justify-center">
+            <img
+              src="justbuild-icon.webp"
+              alt="JustBuild.ai"
+              class="w-64 h-64 mr-2"
+            />
+          </div>
+        </div>
+      </section>
 
-        <section id="how-it-works" class="mb-24">
-            <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">How It Works</h2>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <p class="text-gray-300 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Nullam in dui
-                    mauris. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor neque eu tellus
-                    rhoncus ut
-                    eleifend nibh porttitor. Ut in nulla enim.</p>
-                <p class="text-gray-300">Phasellus molestie magna non est bibendum non venenatis nisl
-                    tempor.
-                    Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor posuere. Praesent
-                    id metus
-                    massa, ut blandit odio. Proin quis tortor orci.</p>
-            </div>
-        </section>
+      <section id="about" class="mb-24">
+        <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">
+          Way beyond Copy/Paste & Copilots
+        </h2>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <p class="text-gray-300 mb-4">
+            Small teams to achieve unprecedented productivity and innovation.
+          </p>
+          <p class="text-gray-300 mb-4">
+            AI-Coding Assistants are revolutionizing software development,
+            enabling small teams to achieve unprecedented productivity and
+            innovation.
+          </p>
+          <blockquote class="border-l-4 border-yellow-400 pl-4 my-4">
+            <p class="text-gray-300 italic">
+              "We're gonna see 10-person billion dollar companies pretty
+              soon...There's this betting pool for the first year that there's a
+              1-person billion dollar company which would have been unimaginable
+              without AI and now it will happen."
+            </p>
+            <footer class="text-gray-400 mt-2">
+              - Sam Altman, CEO of OpenAI
+              <a
+                href="https://x.com/andrewmichaelio/status/1752909423826067776"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-yellow-400 hover:underline"
+                >Source</a
+              >
+            </footer>
+          </blockquote>
+          <p class="text-gray-300">
+            At JustBuild.ai, we're building the tools to make this vision a
+            reality, empowering developers to harness the full potential of AI
+            in their work.
+          </p>
+        </div>
+      </section>
 
-        <section id="use-cases" class="mb-24">
-            <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">Use Cases</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-semibold mb-3 retro-highlight">Rapid Prototyping</h3>
-                    <p class="text-gray-300">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-                        in dui
-                        mauris. Vivamus hendrerit arcu sed erat molestie vehicula.</p>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <h3 class="text-xl font-semibold mb-3 retro-highlight">Code Refactoring</h3>
-                    <p class="text-gray-300">Phasellus molestie magna non est bibendum non venenatis nisl
-                        tempor.
-                        Suspendisse dictum feugiat nisl ut dapibus.</p>
-                </div>
-            </div>
-        </section>
+      <section id="problem" class="mb-24">
+        <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">
+          Skill Issues
+        </h2>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
+          <p class="text-gray-300 mb-4">
+            Software engineering is hard and just saying "AI will solve it"
+            dramatically underestimates the complexity of the problem and
+            insults the hard work of the people who have been working on it for
+            decades. There's a big gap between using ChatGPT or Claude to
+            quickly build a landing page, fix a bug, or write a blog post, and
+            using AI to build a full-fledged application or service. It is the
+            challenge of creating something from nothing and forcing electrons
+            into shapes that build the world is a painful process that is
+            incredibly rewarding to people like us.
+          </p>
 
-        <section id="testimonials" class="mb-24">
-            <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">What Developers Say</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <p class="text-gray-300 mb-4">"Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                        Nullam in
-                        dui mauris."</p>
-                    <p class="text-sm text-gray-400">- Jane Doe, Senior Developer</p>
-                </div>
-                <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <p class="text-gray-300 mb-4">"Vivamus hendrerit arcu sed erat molestie vehicula. Sed
-                        auctor neque
-                        eu tellus rhoncus ut eleifend nibh porttitor."</p>
-                    <p class="text-sm text-gray-400">- John Smith, Tech Lead</p>
-                </div>
-            </div>
-        </section>
+          <p class="text-gray-300 mb-4">
+            Software automation is not a new concept. It has been around for
+            decades, and it has been used in various industries to automate
+            repetitive tasks, like testing and deployment pipelines. Language
+            Models today excel at Reading Comprehension, Text Generation, and
+            Translation. In fact they are so good, we thing they are capable of
+            everything. In fact they struggle a lot of mathematics, they have a
+            hard time with reasoning, they are over confident, and approach
+            problems in a very different way than humans.
+          </p>
 
-        <section id="faq" class="mb-24">
-            <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">FAQ</h2>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <div class="mb-4">
-                    <h3 class="text-xl font-semibold mb-2 retro-highlight">Is JustBuild compatible with all
-                        programming
-                        languages?</h3>
-                    <p class="text-gray-300">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam
-                        in dui
-                        mauris.</p>
-                </div>
-                <div class="mb-4">
-                    <h3 class="text-xl font-semibold mb-2 retro-highlight">Can I use JustBuild with my
-                        existing version
-                        control system?</h3>
-                    <p class="text-gray-300">Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor
-                        neque eu
-                        tellus rhoncus ut eleifend nibh porttitor.</p>
-                </div>
+          <p class="text-gray-300 mb-4">
+            In order to get from building simple User Interfaces and python
+            scripts into building entire small businesses, we need to bridge the
+            gap between the way humans think, the way computers process
+            information, and the way language models generate text. To do this
+            requires focusing on the domain and building out
+          </p>
+          <ul>
+            <li>Workflows</li>
+            <li>Templates</li>
+            <li>Tools</li>
+            <li>Constructive Feedback Loops</li>
+            <li>Domain Specific Knowledge (Facts and Concepts)</li>
+          </ul>
+        </div>
+      </section>
+      <section id="challenge" class="mb-24">
+        <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">
+          The Communication Challenge
+        </h2>
+        <div class="bg-gray-800 p-6 rounded-lg shadow-lg mb-6">
+          <p class="text-gray-300 mb-4">
+            The fundamental issue in AI-assisted coding lies in bridging the
+            communication gap between three distinct paradigms:
+          </p>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-gray-900 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              Humans: Graphs
+            </h3>
+            <p class="text-gray-300">
+              We think in interconnected networks of ideas and visualize complex
+              interactions.
+            </p>
+            <div class="w-full aspect-square mb-4 bg-gray-800 rounded-full p-4">
+              <!-- <img
+                src="./assets/humans-graph.svg"
+                alt="Human thinking represented as a graph"
+                class="w-full h-full"
+              /> -->
             </div>
-        </section>
+          </div>
+          <div class="bg-gray-900 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              Computers: Trees
+            </h3>
+            <p class="text-gray-300">
+              Programs operate on hierarchical structures, like abstract syntax
+              trees.
+            </p>
+            <div class="w-full aspect-square mb-4 bg-gray-800 rounded-lg p-4">
+              <!-- <img
+                src="computers-tree.svg"
+                alt="Computer processing represented as a tree"
+                class="w-full h-full"
+              /> -->
+            </div>
+          </div>
+          <div class="bg-gray-900 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              Language Models: Lines
+            </h3>
+            <p class="text-gray-300">
+              AI models process and generate information sequentially as linear
+              text.
+            </p>
+            <div class="w-full aspect-square mb-4 bg-gray-800 rounded-lg p-4">
+                <!-- <img
+                    src="language-models-lines.svg"
+                    alt="Language models represented as lines"
+                    class="w-full h-full"
+                /> -->
+            </div>
+          </div>
+        </div>
+      </section>
 
-        <section id="contributing" class="mb-24">
-            <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">Contributing</h2>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <p class="text-gray-300 mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Nullam in dui
-                    mauris. Vivamus hendrerit arcu sed erat molestie vehicula.</p>
-                <a href="https://github.com/closedloop-technologies/justbuild/contribute"
-                    class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">Contribute
-                    on GitHub</a>
-            </div>
-        </section>
+      <section id="tools" class="mb-24">
+        <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">
+          Our Tools: Bridging the Gap
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              Python Library: justbuild
+            </h3>
+            <p class="text-gray-300 mb-4">
+              A powerful library with the 'lfg' command line tool to help
+              convert between graphs, trees, and lines. It assists in merging
+              LLM outputs back into code, planning tools, and building planning
+              path DAGs.
+            </p>
+            <a href="#" class="text-yellow-400 hover:text-yellow-300"
+              >Explore Documentation</a
+            >
+          </div>
+          <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              Chrome Extension
+            </h3>
+            <p class="text-gray-300 mb-4">
+              Our upcoming Chrome extension will wrap the Python library,
+              allowing seamless integration with web-based coding environments
+              and local co-pilots.
+            </p>
+            <a href="#" class="text-yellow-400 hover:text-yellow-300"
+              >Join Waitlist</a
+            >
+          </div>
+        </div>
+      </section>
 
-        <section id="roadmap" class="mb-24">
-            <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">Roadmap</h2>
-            <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                <ul class="list-disc list-inside text-gray-300">
-                    <li class="mb-2">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                    <li class="mb-2">Nullam in dui mauris. Vivamus hendrerit arcu sed erat molestie
-                        vehicula.</li>
-                    <li class="mb-2">Sed auctor neque eu tellus rhoncus ut eleifend nibh porttitor.</li>
-                    <li>Ut in nulla enim. Phasellus molestie magna non est bibendum non venenatis nisl
-                        tempor.</li>
-                </ul>
-            </div>
-        </section>
+      <section id="next-steps" class="mb-24">
+        <h2 class="pixelated text-3xl sm:text-4xl mb-6 retro-text">
+          Next Steps
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              Weekly Newsletter
+            </h3>
+            <p class="text-gray-300 mb-4">
+              Sign up for JustBuild.ai newsletter to learn how to build useful
+              things using AI-Assisted Coding Workflows.
+            </p>
+            <a
+              href="#"
+              class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 px-4 rounded inline-block"
+              >Subscribe Now</a
+            >
+          </div>
+          <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              Follow on Twitter
+            </h3>
+            <p class="text-gray-300 mb-4">
+              Stay updated with the latest in AI-Assisted Coding by following
+              @justbuild_ai.
+            </p>
+            <a
+              href="https://twitter.com/justbuild_ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="bg-blue-400 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded inline-block"
+              >Follow @justbuild_ai</a
+            >
+          </div>
+          <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold mb-3 retro-highlight">
+              YouTube Channel
+            </h3>
+            <p class="text-gray-300 mb-4">
+              Subscribe to our YouTube channel for in-depth tutorials and
+              demonstrations.
+            </p>
+            <a
+              href="https://www.youtube.com/@closedlooptech"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-block"
+              >Subscribe on YouTube</a
+            >
+          </div>
+        </div>
+      </section>
     </main>
 
     <footer class="bg-gray-800 py-8 border-t border-gray-700">
-        <div class="container mx-auto px-4 text-center">
-            <p class="text-gray-400">&copy; 2024 JustBuild.ai. MIT License. Created by ClosedLoop
-                Technologies.</p>
-        </div>
+      <div class="container mx-auto px-4 text-center">
+        <p class="text-gray-400">
+          &copy; 2024 JustBuild.ai. Created by ClosedLoop Technologies.
+        </p>
+      </div>
     </footer>
-</body>
-
+  </body>
 </html>
